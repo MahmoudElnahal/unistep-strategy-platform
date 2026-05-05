@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNISTEP Platform — لوحة التحكم</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/shared.css">
+
+<style>
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 16px;
+}
+
+.step-card {
+  background: white;
+  border-radius: 14px;
+  padding: 24px;
+  border: 1px solid var(--rule);
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: all .25s;
+  display: flex; flex-direction: column;
+  min-height: 220px;
+}
+.step-card.available { cursor: pointer; }
+.step-card.available:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+  border-color: var(--gold);
+}
+.step-card.future { opacity: 0.5; cursor: not-allowed; }
+
+.step-card::before {
+  content: ""; position: absolute; top: 0; inset-inline: 0; height: 3px;
+}
+.step-card.phase-1::before { background: var(--ink); }
+.step-card.phase-2::before { background: var(--gold); }
+.step-card.phase-3::before { background: var(--plum); }
+.step-card.available::before { background: var(--green); }
+
+.step-num {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 13px; color: var(--muted); font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.step-name {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 19px; font-weight: 700;
+  letter-spacing: -.3px; margin-bottom: 8px;
+  line-height: 1.3;
+}
+.step-fw {
+  font-size: 12px; color: var(--gold); font-weight: 600;
+  margin-bottom: 14px;
+}
+.step-desc {
+  font-size: 13px; color: var(--slate);
+  line-height: 1.6; flex: 1; margin-bottom: 16px;
+}
+.step-status {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 600;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+.status-dot { width: 8px; height: 8px; border-radius: 50%; }
+.status-dot.ready { background: var(--green); box-shadow: 0 0 0 3px rgba(11,124,77,.15); }
+.status-dot.future { background: var(--rule-strong); }
+.status-text.ready { color: var(--green); }
+.status-text.future { color: var(--muted); }
+
+/* CTA */
+.cta-banner {
+  background: linear-gradient(135deg, var(--ink) 0%, #1a2842 100%);
+  color: var(--paper);
+  border-radius: 16px;
+  padding: 36px;
+  margin: 30px 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  max-width: 1256px;
+  margin-inline: auto;
+}
+.cta-text { flex: 1; min-width: 280px; }
+.cta-text h3 {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 22px; font-weight: 800;
+  margin-bottom: 8px;
+}
+.cta-text p { font-size: 14px; color: rgba(255,255,255,.8); }
+.cta-action .btn-primary { background: var(--gold); color: white; }
+.cta-action .btn-primary:hover { background: var(--gold-soft); }
+
+.phases-strip {
+  display: flex; gap: 16px;
+  margin: 24px 0;
+  padding: 16px;
+  background: white;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  font-size: 13px;
+}
+.phase-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 6px;
+}
+.phase-pill.p1 { background: rgba(15,27,45,.08); color: var(--ink); }
+.phase-pill.p2 { background: rgba(184,137,58,.12); color: var(--gold); }
+.phase-pill.p3 { background: rgba(92,44,95,.1); color: var(--plum); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="/">
+      <div class="brand-mark">U</div>
+      <div class="brand-text">
+        <span class="brand-name">UNISTEP Platform</span>
+        <span class="brand-tag">Situation Analysis Framework</span>
+      </div>
+    </a>
+    <span class="version-tag">v9.0.0</span>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-eyebrow">
+    <span>منصة استشارية متكاملة</span>
+  </div>
+  <h1>تشخيص الوضع الراهن<br>للجمعيات غير الربحية</h1>
+  <p class="hero-sub">
+    منصة تشتغل بالذكاء الاصطناعي لإنتاج تقارير الوضع الراهن بمنهجية MBB. 12 خطوة، 3 مراحل، 12+ إطار عالمي.
+  </p>
+  
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">12</div>
+      <div class="stat-label">خطوة كاملة</div>
+    </div>
+    <div class="stat" style="border-top-color: var(--green);">
+      <div class="stat-num">3</div>
+      <div class="stat-label">جاهزة في v9</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">3</div>
+      <div class="stat-label">مراحل تحليل</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">4+3</div>
+      <div class="stat-label">جمعيات للمقارنة</div>
+    </div>
+  </div>
+  
+  <div class="phases-strip">
+    <strong style="color: var(--ink); margin-inline-end: 12px;">المراحل:</strong>
+    <span class="phase-pill p1">● المرحلة الأولى — الخارجية (1-6)</span>
+    <span class="phase-pill p2">● المرحلة الثانية — الداخلية (7-11)</span>
+    <span class="phase-pill p3">● المرحلة الثالثة — التوليف (12)</span>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-banner">
+  <div class="cta-text">
+    <h3>🚀 ابدأ تحليلك الآن</h3>
+    <p>أدخل بيانات جمعيتك مرة واحدة، واختر الخطوات اللي عايز تحللها — نشغّلها بالتوازي ونسلّمك التقارير الكاملة.</p>
+  </div>
+  <div class="cta-action">
+    <a href="/wizard" class="btn btn-primary btn-large">▶ بدء التحليل</a>
+  </div>
+</div>
+
+<!-- Steps Grid -->
+<section>
+  <div class="section-head">
+    <h2 class="section-h">الخطوات الـ 12 بالتفصيل</h2>
+    <span class="section-desc">اضغط على أي خطوة جاهزة لبدء التحليل المباشر</span>
+  </div>
+
+  <div class="steps-grid" id="steps-grid"></div>
+</section>
+
+<footer>
+  <div class="foot-brand">UNISTEP</div>
+  <div>منصة استشارية رقمية للقطاع غير الربحي السعودي</div>
+  <div class="foot-meta">v9.0.0 • PESTLE + Porter + Benchmarking Ready • مايو 2026</div>
+</footer>
+
+<script>
+const STEPS = [
+  // Phase 1
+  { num: 1, id: "step_01_pestle", phase: 1, name: "PESTLE", fw: "مسح البيئة الكلية",
+    desc: "تحليل العوامل السياسية والاقتصادية والاجتماعية والتقنية والقانونية والبيئية.",
+    status: "ready" },
+  { num: 2, id: "step_02_porter", phase: 1, name: "Porter's 5 Forces", fw: "تحليل القوى التنافسية",
+    desc: "تحليل المنافسين والبدائل والوافدين الجدد والمانحين والكوادر.",
+    status: "ready" },
+  { num: 3, id: "step_03_beneficiaries", phase: 1, name: "تحليل المستفيدين", fw: "Customer Journey Mapping",
+    desc: "خريطة رحلة المستفيد والاحتياجات غير الملباة.", status: "future" },
+  { num: 4, id: "step_04_donors", phase: 1, name: "تحليل المانحين", fw: "Donor Portfolio Analysis",
+    desc: "خريطة المانحين، تنوع التمويل، فرص الشراكات.", status: "future" },
+  { num: 5, id: "step_05_benchmarking", phase: 1, name: "Benchmarking", fw: "المقارنة المعيارية",
+    desc: "مقارنة مع 4 جمعيات محلية و 3 دولية، استخراج المبادرات والفرص.",
+    status: "ready" },
+  { num: 6, id: "step_06_digital_presence", phase: 1, name: "الحضور الرقمي", fw: "Digital Presence Audit",
+    desc: "تقييم الموقع، السوشيال، وضوح الرسالة.", status: "future" },
+  // Phase 2
+  { num: 7, id: "step_07_strategy", phase: 2, name: "الاستراتيجية", fw: "McKinsey 7S",
+    desc: "تحليل الخطة الاستراتيجية ومدى التطبيق.", status: "future" },
+  { num: 8, id: "step_08_governance", phase: 2, name: "الحوكمة", fw: "NCNP Compliance",
+    desc: "تقييم الحوكمة والمخاطر التنظيمية.", status: "future" },
+  { num: 9, id: "step_09_financial", phase: 2, name: "الاستدامة المالية", fw: "Charity Navigator",
+    desc: "تحليل المؤشرات المالية والاستدامة.", status: "future" },
+  { num: 10, id: "step_10_operations", phase: 2, name: "العمليات الرقمية", fw: "Digital Maturity",
+    desc: "تقييم العمليات والنضج الرقمي.", status: "future" },
+  { num: 11, id: "step_11_programs", phase: 2, name: "البرامج والأثر", fw: "Theory of Change + SROI",
+    desc: "قياس الأثر، توصيات التوسع والإيقاف.", status: "future" },
+  // Phase 3
+  { num: 12, id: "step_12_synthesis", phase: 3, name: "التوليف النهائي", fw: "SWOT + TOWS + Roadmap",
+    desc: "جمع المخرجات، خارطة الطريق الاستراتيجية.", status: "future" },
+];
+
+const grid = document.getElementById("steps-grid");
+
+STEPS.forEach(step => {
+  const isReady = step.status === "ready";
+  const card = document.createElement(isReady ? "a" : "div");
+  card.className = `step-card phase-${step.phase} ${isReady ? "available" : "future"}`;
+  if (isReady) card.href = `/wizard?preselect=${step.id}`;
+  
+  const statusInfo = isReady
+    ? { dot: "ready", text: "ready", label: "جاهزة الآن — اضغط لاختيارها" }
+    : { dot: "future", text: "future", label: "قريباً" };
+  
+  card.innerHTML = `
+    <div class="step-num">الخطوة ${step.num} • مرحلة ${step.phase}</div>
+    <div class="step-name">${step.name}</div>
+    <div class="step-fw">${step.fw}</div>
+    <div class="step-desc">${step.desc}</div>
+    <div class="step-status">
+      <span class="status-dot ${statusInfo.dot}"></span>
+      <span class="status-text ${statusInfo.text}">${statusInfo.label}</span>
+    </div>
+  `;
+  grid.appendChild(card);
+});
+
+// Live info
+fetch("/api/info").then(r => r.json()).then(info => {
+  console.log("Platform info:", info);
+}).catch(() => {});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wizard — UNISTEP Platform</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/shared.css">
+
+<style>
+main { max-width: 980px; margin: 0 auto; padding: 30px 32px 60px; }
+
+/* Wizard navigation */
+.wizard-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 32px;
+  background: white;
+  padding: 18px 24px;
+  border-radius: 14px;
+  border: 1px solid var(--rule);
+  box-shadow: var(--shadow);
+}
+.steps-progress {
+  display: flex; align-items: center; gap: 10px;
+}
+.step-circle {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--paper-2);
+  color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 14px;
+  font-family: 'Tajawal', sans-serif;
+  transition: all .2s;
+}
+.step-circle.active { background: var(--gold); color: white; transform: scale(1.1); }
+.step-circle.done { background: var(--green); color: white; }
+.step-line {
+  width: 40px; height: 2px;
+  background: var(--paper-2);
+}
+.step-line.done { background: var(--green); }
+
+.step-label {
+  font-size: 13px; font-weight: 600; color: var(--ink);
+}
+
+/* Wizard pages */
+.wizard-pages { position: relative; }
+.wizard-page {
+  display: none;
+  animation: fadeIn .3s ease;
+}
+.wizard-page.active { display: block; }
+
+.page-card {
+  background: white;
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  padding: 36px;
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
+}
+.page-h {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 24px; font-weight: 800;
+  margin-bottom: 6px;
+  letter-spacing: -.5px;
+}
+.page-desc { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
+
+.page-eyebrow {
+  display: inline-block;
+  font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+  color: var(--gold); text-transform: uppercase;
+  padding: 4px 12px; border-radius: 100px;
+  background: rgba(184,137,58,.1);
+  margin-bottom: 16px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+@media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+
+/* Step selection cards */
+.step-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  margin-top: 8px;
+}
+.step-option {
+  position: relative;
+  border: 2px solid var(--rule);
+  border-radius: 12px;
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: all .2s;
+  background: var(--paper);
+}
+.step-option:hover {
+  border-color: var(--gold);
+  background: white;
+}
+.step-option.selected {
+  border-color: var(--green);
+  background: rgba(11,124,77,.05);
+  box-shadow: 0 0 0 3px rgba(11,124,77,.1);
+}
+.step-option input[type="checkbox"] {
+  position: absolute;
+  top: 18px; left: 20px;
+  width: 20px; height: 20px;
+  cursor: pointer;
+  accent-color: var(--green);
+}
+.step-option .opt-num {
+  font-size: 11px; color: var(--muted);
+  font-weight: 700; letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+.step-option .opt-name {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 17px; font-weight: 700;
+  margin-bottom: 4px;
+  padding-inline-end: 30px; /* space for checkbox */
+}
+.step-option .opt-fw {
+  font-size: 12px; color: var(--gold); font-weight: 600;
+  margin-bottom: 8px;
+}
+.step-option .opt-desc {
+  font-size: 12px; color: var(--slate); line-height: 1.5;
+}
+
+/* Buttons row */
+.btn-row {
+  display: flex; gap: 14px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Estimate card */
+.estimate-card {
+  background: rgba(184,137,58,.08);
+  border: 1px solid rgba(184,137,58,.3);
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin: 16px 0;
+  font-size: 13px;
+  color: var(--slate);
+  display: flex; align-items: center; gap: 12px;
+}
+.estimate-num {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 22px; font-weight: 800;
+  color: var(--gold);
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="/">
+      <div class="brand-mark">U</div>
+      <div class="brand-text">
+        <span class="brand-name">UNISTEP</span>
+        <span class="brand-tag">معالج إدخال البيانات</span>
+      </div>
+    </a>
+    <a class="back-link" href="/">← الرجوع للرئيسية</a>
+  </div>
+</header>
+
+<main>
+  <!-- Wizard Navigation -->
+  <div class="wizard-nav">
+    <div class="steps-progress" id="progress-bar">
+      <div class="step-circle active" data-step="1">1</div>
+      <div class="step-line"></div>
+      <div class="step-circle" data-step="2">2</div>
+      <div class="step-line"></div>
+      <div class="step-circle" data-step="3">3</div>
+      <div class="step-line"></div>
+      <div class="step-circle" data-step="4">4</div>
+    </div>
+    <div class="step-label" id="step-label">الصفحة 1 من 4 — الهوية الأساسية</div>
+  </div>
+
+  <form id="wizard-form">
+    
+    <!-- Page 1: الهوية الأساسية -->
+    <div class="wizard-page active" data-page="1">
+      <div class="page-card">
+        <div class="page-eyebrow">الصفحة 1 من 4</div>
+        <h2 class="page-h">الهوية الأساسية للجمعية</h2>
+        <p class="page-desc">معلومات أساسية لتحديد طبيعة الجمعية ومجالها.</p>
+        
+        <div class="form-grid">
+          <div class="field full">
+            <label>اسم الجمعية <span class="required-mark">*</span></label>
+            <input name="name" required placeholder="مثال: جمعية البر بالرياض">
+          </div>
+          <div class="field">
+            <label>القطاع العام <span class="required-mark">*</span></label>
+            <input name="sector" required placeholder="رعاية اجتماعية، صحة، تعليم...">
+          </div>
+          <div class="field">
+            <label>التخصص الدقيق <span class="required-mark">*</span></label>
+            <input name="specialization" required placeholder="كفالة الأيتام، تعليم ذوي الإعاقة...">
+          </div>
+          <div class="field full">
+            <label>الفئة المستهدفة <span class="required-mark">*</span> <span class="hint">(تفصيلاً)</span></label>
+            <input name="target_audience" required placeholder="الأيتام، الأرامل، الأسر محدودة الدخل">
+          </div>
+          <div class="field">
+            <label>عدد الموظفين <span class="hint">(يحدد الحجم تلقائياً)</span></label>
+            <input name="num_employees" type="number" min="0" placeholder="مثال: 35">
+          </div>
+          <div class="field">
+            <label>سنة التأسيس</label>
+            <input name="year_founded" type="number" min="1900" max="2030" placeholder="مثال: 2015">
+          </div>
+        </div>
+      </div>
+      
+      <div class="btn-row">
+        <span></span>
+        <button type="button" class="btn btn-primary" data-next>التالي ←</button>
+      </div>
+    </div>
+    
+    <!-- Page 2: التموضع -->
+    <div class="wizard-page" data-page="2">
+      <div class="page-card">
+        <div class="page-eyebrow">الصفحة 2 من 4</div>
+        <h2 class="page-h">التموضع الجغرافي والاستراتيجي</h2>
+        <p class="page-desc">معلومات الرؤية والرسالة والأهداف. كل ما زادت التفاصيل، زادت دقة التحليل.</p>
+        
+        <div class="form-grid">
+          <div class="field full">
+            <label>المنطقة الجغرافية</label>
+            <input name="region" placeholder="الرياض، جدة، الدمام، شمال السعودية...">
+          </div>
+          <div class="field">
+            <label>الرؤية</label>
+            <textarea name="vision" placeholder="الرؤية المعتمدة..."></textarea>
+          </div>
+          <div class="field">
+            <label>الرسالة</label>
+            <textarea name="mission" placeholder="الرسالة المعتمدة..."></textarea>
+          </div>
+          <div class="field full">
+            <label>الأهداف الاستراتيجية <span class="hint">(فاصلة بين كل هدف)</span></label>
+            <textarea name="strategic_goals" placeholder="توسيع الكفالة، زيادة المتبرعين، تحسين جودة البرامج"></textarea>
+          </div>
+        </div>
+      </div>
+      
+      <div class="btn-row">
+        <button type="button" class="btn btn-secondary" data-prev>→ السابق</button>
+        <button type="button" class="btn btn-primary" data-next>التالي ←</button>
+      </div>
+    </div>
+    
+    <!-- Page 3: البرامج والتمويل -->
+    <div class="wizard-page" data-page="3">
+      <div class="page-card">
+        <div class="page-eyebrow">الصفحة 3 من 4</div>
+        <h2 class="page-h">البرامج والتمويل</h2>
+        <p class="page-desc">معلومات اختيارية بتساعد في تحليل دقيق أكثر — خصوصاً لـ Porter's 5 Forces.</p>
+        
+        <div class="form-grid">
+          <div class="field full">
+            <label>برنامج/مبادرة قائمة <span class="hint">(يساعد في التصنيف)</span></label>
+            <textarea name="sample_program" placeholder="برنامج كفالة الأيتام، حملات خيرية موسمية..."></textarea>
+          </div>
+          <div class="field full">
+            <label>مؤشرات الأداء الحالية</label>
+            <textarea name="current_kpis" placeholder="عدد المستفيدين 5000، نسبة الرضا 92%..."></textarea>
+          </div>
+          <div class="field full">
+            <label>مصادر التمويل <span class="hint">(فاصلة بين كل مصدر)</span></label>
+            <textarea name="funding_sources" placeholder="تبرعات أفراد، شركات، حكومي، أوقاف..."></textarea>
+          </div>
+        </div>
+      </div>
+      
+      <div class="btn-row">
+        <button type="button" class="btn btn-secondary" data-prev>→ السابق</button>
+        <button type="button" class="btn btn-primary" data-next>التالي ←</button>
+      </div>
+    </div>
+    
+    <!-- Page 4: اختيار الخطوات -->
+    <div class="wizard-page" data-page="4">
+      <div class="page-card">
+        <div class="page-eyebrow">الصفحة 4 من 4</div>
+        <h2 class="page-h">اختر الخطوات اللي عايز تشغّلها</h2>
+        <p class="page-desc">اختر خطوة واحدة أو أكثر. نشغّل الخطوات المستقلة بالتوازي عشان توفّر الوقت.</p>
+        
+        <div class="step-options" id="step-options">
+          <label class="step-option">
+            <input type="checkbox" name="selected_steps" value="step_01_pestle">
+            <div class="opt-num">الخطوة 1</div>
+            <div class="opt-name">PESTLE</div>
+            <div class="opt-fw">مسح البيئة الكلية</div>
+            <div class="opt-desc">تحليل 6 عوامل: السياسية، الاقتصادية، الاجتماعية، التقنية، القانونية، البيئية.</div>
+          </label>
+          
+          <label class="step-option">
+            <input type="checkbox" name="selected_steps" value="step_02_porter">
+            <div class="opt-num">الخطوة 2</div>
+            <div class="opt-name">Porter's 5 Forces</div>
+            <div class="opt-fw">القوى التنافسية</div>
+            <div class="opt-desc">تحليل المنافسين، البدائل، الوافدين الجدد، الممولين، الكوادر.</div>
+          </label>
+          
+          <label class="step-option">
+            <input type="checkbox" name="selected_steps" value="step_05_benchmarking">
+            <div class="opt-num">الخطوة 5</div>
+            <div class="opt-name">Benchmarking</div>
+            <div class="opt-fw">المقارنة المعيارية</div>
+            <div class="opt-desc">مقارنة مع 4 جمعيات محلية + 3 دولية، استخراج المبادرات.</div>
+          </label>
+        </div>
+        
+        <div class="estimate-card">
+          <span class="estimate-num" id="estimate-num">0</span>
+          <div>
+            <div style="font-weight: 700; color: var(--ink);">خطوة مختارة</div>
+            <div id="estimate-detail" style="margin-top: 2px;">اختر خطوة على الأقل للبدء</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="btn-row">
+        <button type="button" class="btn btn-secondary" data-prev>→ السابق</button>
+        <button type="submit" class="btn btn-primary btn-large" id="submit-btn">▶ بدء التحليل</button>
+      </div>
+    </div>
+  </form>
+</main>
+
+<script>
+const form = document.getElementById("wizard-form");
+const pages = document.querySelectorAll(".wizard-page");
+const circles = document.querySelectorAll(".step-circle");
+const lines = document.querySelectorAll(".step-line");
+const stepLabel = document.getElementById("step-label");
+
+const PAGE_LABELS = [
+  "الهوية الأساسية",
+  "التموضع",
+  "البرامج والتمويل",
+  "اختيار الخطوات",
+];
+
+let currentPage = 1;
+
+// Pre-select from URL ?preselect=step_id
+const params = new URLSearchParams(window.location.search);
+const preselect = params.get("preselect");
+if (preselect) {
+  setTimeout(() => {
+    const cb = document.querySelector(`input[name="selected_steps"][value="${preselect}"]`);
+    if (cb) cb.checked = true;
+    updateEstimate();
+    updateOptionStyles();
+  }, 100);
+}
+
+function showPage(n) {
+  pages.forEach(p => p.classList.remove("active"));
+  document.querySelector(`[data-page="${n}"]`).classList.add("active");
+  
+  circles.forEach((c, i) => {
+    c.classList.remove("active", "done");
+    if (i + 1 < n) c.classList.add("done");
+    else if (i + 1 === n) c.classList.add("active");
+  });
+  
+  lines.forEach((l, i) => {
+    l.classList.toggle("done", i + 1 < n);
+  });
+  
+  stepLabel.textContent = `الصفحة ${n} من 4 — ${PAGE_LABELS[n-1]}`;
+  currentPage = n;
+  
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function validatePage(n) {
+  const page = document.querySelector(`[data-page="${n}"]`);
+  const requiredFields = page.querySelectorAll("input[required], textarea[required]");
+  for (const f of requiredFields) {
+    if (!f.value.trim()) {
+      f.focus();
+      f.style.borderColor = "var(--red)";
+      setTimeout(() => f.style.borderColor = "", 2000);
+      alert(`الرجاء إدخال "${f.labels[0]?.textContent.replace(" *", "") || f.name}"`);
+      return false;
+    }
+  }
+  // Page 4: must select at least one step
+  if (n === 4) {
+    const checked = document.querySelectorAll('input[name="selected_steps"]:checked');
+    if (checked.length === 0) {
+      alert("الرجاء اختيار خطوة واحدة على الأقل");
+      return false;
+    }
+  }
+  return true;
+}
+
+document.querySelectorAll("[data-next]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    if (validatePage(currentPage)) {
+      showPage(currentPage + 1);
+    }
+  });
+});
+
+document.querySelectorAll("[data-prev]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    showPage(currentPage - 1);
+  });
+});
+
+// Step option styling
+function updateOptionStyles() {
+  document.querySelectorAll(".step-option").forEach(opt => {
+    const cb = opt.querySelector("input[type=checkbox]");
+    opt.classList.toggle("selected", cb.checked);
+  });
+}
+
+function updateEstimate() {
+  const checked = document.querySelectorAll('input[name="selected_steps"]:checked');
+  const count = checked.length;
+  document.getElementById("estimate-num").textContent = count;
+  
+  const detail = document.getElementById("estimate-detail");
+  if (count === 0) {
+    detail.textContent = "اختر خطوة على الأقل للبدء";
+  } else {
+    const names = Array.from(checked).map(cb => {
+      return cb.parentElement.querySelector(".opt-name").textContent;
+    });
+    detail.textContent = "اختر: " + names.join("، ");
+  }
+}
+
+document.querySelectorAll('input[name="selected_steps"]').forEach(cb => {
+  cb.addEventListener("change", () => {
+    updateEstimate();
+    updateOptionStyles();
+  });
+});
+
+// Submit
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!validatePage(4)) return;
+  
+  // Collect data
+  const fd = new FormData(form);
+  const data = {};
+  
+  // Single-value fields
+  for (const [key, value] of fd.entries()) {
+    if (key === "selected_steps") continue;
+    if (!value || !value.trim()) continue;
+    
+    if (["strategic_goals", "funding_sources"].includes(key)) {
+      data[key] = value.split(/[,،\n]/).map(s => s.trim()).filter(Boolean);
+    } else if (["num_employees", "year_founded"].includes(key)) {
+      data[key] = parseInt(value);
+    } else {
+      data[key] = value;
+    }
+  }
+  
+  // Multi-value: selected_steps
+  data.selected_steps = Array.from(
+    document.querySelectorAll('input[name="selected_steps"]:checked')
+  ).map(cb => cb.value);
+  
+  console.log("Submitting:", data);
+  
+  const submitBtn = document.getElementById("submit-btn");
+  submitBtn.disabled = true;
+  submitBtn.textContent = "جاري الإرسال...";
+  
+  try {
+    const res = await fetch("/api/start", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `HTTP ${res.status}`);
+    }
+    
+    const { run_id } = await res.json();
+    window.location.href = `/run/${run_id}`;
+  } catch (err) {
+    alert("خطأ: " + err.message);
+    submitBtn.disabled = false;
+    submitBtn.textContent = "▶ بدء التحليل";
+  }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نتائج التحليل — UNISTEP Platform</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/shared.css">
+
+<style>
+main { max-width: 1100px; margin: 0 auto; padding: 30px 32px 60px; }
+
+.run-header {
+  background: white;
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  padding: 24px 28px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+}
+.run-meta {
+  display: flex; align-items: center; gap: 16px;
+  flex-wrap: wrap; margin-top: 12px;
+}
+.run-id-pill {
+  background: var(--paper-2);
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: monospace;
+  color: var(--slate);
+}
+.run-status {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 14px; font-weight: 600;
+}
+.run-status .dot { width: 10px; height: 10px; border-radius: 50%; }
+.run-status.running .dot {
+  background: var(--gold);
+  animation: pulse 1.5s infinite;
+}
+.run-status.completed .dot { background: var(--green); }
+.run-status.failed .dot { background: var(--red); }
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.2); }
+}
+
+/* Progress events panel */
+.progress-panel {
+  background: white;
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+}
+.progress-h {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 18px; font-weight: 700;
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.spinner {
+  width: 24px; height: 24px;
+  border: 3px solid var(--rule);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+.progress-events {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 12px;
+  background: var(--paper);
+  border-radius: 8px;
+  border: 1px solid var(--rule);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.event-item {
+  padding: 6px 0;
+  border-bottom: 1px solid var(--rule);
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.event-item:last-child { border: none; }
+.event-time {
+  color: var(--muted);
+  font-size: 11px;
+  font-family: monospace;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.event-icon { flex-shrink: 0; }
+.event-text { flex: 1; color: var(--slate); }
+
+/* Steps progress */
+.steps-progress {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 16px 0;
+}
+.step-progress {
+  background: var(--paper);
+  border-radius: 10px;
+  border: 1px solid var(--rule);
+  padding: 16px;
+  position: relative;
+  border-inline-start: 4px solid var(--rule-strong);
+}
+.step-progress.running { border-inline-start-color: var(--gold); background: rgba(184,137,58,.05); }
+.step-progress.completed { border-inline-start-color: var(--green); background: rgba(11,124,77,.05); }
+.step-progress.failed { border-inline-start-color: var(--red); }
+.step-progress-name {
+  font-weight: 700; font-size: 13px;
+  margin-bottom: 4px;
+}
+.step-progress-status {
+  font-size: 11px; color: var(--muted);
+}
+
+/* Results grid */
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 18px;
+}
+.result-card {
+  background: white;
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+.result-card h3 {
+  font-family: 'Tajawal', sans-serif;
+  font-size: 18px; font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--ink);
+}
+.result-card .fw {
+  font-size: 12px; color: var(--gold);
+  font-weight: 600; margin-bottom: 16px;
+}
+.result-summary {
+  font-size: 13px;
+  color: var(--slate);
+  line-height: 1.7;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: var(--paper);
+  border-radius: 8px;
+}
+.result-summary strong { color: var(--ink); }
+
+.downloads {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.download-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  font-size: 13px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: all .15s;
+}
+.download-btn:hover {
+  background: var(--gold);
+  color: white;
+  border-color: var(--gold);
+}
+.download-icon { font-size: 18px; }
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: var(--muted);
+}
+.error-banner {
+  background: rgba(168,74,45,.1);
+  border: 1px solid var(--red);
+  border-radius: 10px;
+  padding: 14px 18px;
+  color: var(--red);
+  margin-bottom: 20px;
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="/">
+      <div class="brand-mark">U</div>
+      <div class="brand-text">
+        <span class="brand-name">UNISTEP</span>
+        <span class="brand-tag">نتائج التحليل</span>
+      </div>
+    </a>
+    <a class="back-link" href="/">← الرجوع للرئيسية</a>
+  </div>
+</header>
+
+<main>
+  <div class="run-header">
+    <h1 class="page-h" id="run-title" style="font-family: Tajawal; font-size: 28px; font-weight: 800; letter-spacing: -.5px;">
+      جاري تحضير التحليل...
+    </h1>
+    <div class="run-meta">
+      <span class="run-id-pill" id="run-id-pill">Run: ...</span>
+      <span class="run-status running" id="run-status">
+        <span class="dot"></span><span class="text">جاري التشغيل</span>
+      </span>
+      <span class="run-id-pill" id="cost-pill" style="display: none;">$0.00</span>
+    </div>
+  </div>
+  
+  <!-- Progress -->
+  <div class="progress-panel" id="progress-panel">
+    <div class="progress-h">
+      <div class="spinner" id="spinner"></div>
+      <span id="progress-h-text">جاري التحليل...</span>
+    </div>
+    
+    <div class="steps-progress" id="steps-progress"></div>
+    
+    <div class="progress-events" id="progress-events"></div>
+  </div>
+  
+  <!-- Results (initially hidden) -->
+  <div id="results-section" style="display: none;">
+    <div class="section-head" style="margin-bottom: 20px;">
+      <h2 class="section-h">📊 نتائج التحليل</h2>
+      <span class="section-desc">حمّل التقارير الكاملة من البطاقات أدناه</span>
+    </div>
+    
+    <div class="results-grid" id="results-grid"></div>
+  </div>
+</main>
+
+<script>
+const RUN_ID = window.location.pathname.split("/").pop();
+document.getElementById("run-id-pill").textContent = `Run: ${RUN_ID}`;
+
+const STEP_INFO = {
+  step_01_pestle: { name: "PESTLE", fw: "مسح البيئة الكلية", color: "var(--ink)" },
+  step_02_porter: { name: "Porter's 5 Forces", fw: "القوى التنافسية", color: "var(--plum)" },
+  step_05_benchmarking: { name: "Benchmarking", fw: "المقارنة المعيارية", color: "var(--green)" },
+};
+
+const FILE_LABELS = {
+  pestle_word: "📄 تقرير PESTLE (Word)",
+  porter_word: "📄 تقرير Porter (Word)",
+  benchmarking_word: "📄 تقرير Benchmarking (Word)",
+  benchmarking_excel: "📊 التقرير الموحد (Excel)",
+  benchmarking_output_1: "📋 مخرج 1 — معايير (Excel)",
+  benchmarking_output_2: "📋 مخرج 2 — بيانات (Excel)",
+  benchmarking_output_3: "📋 مخرج 3 — مصفوفة (Excel)",
+};
+
+const stepProgressEl = document.getElementById("steps-progress");
+const eventsEl = document.getElementById("progress-events");
+const stepStates = {};
+
+// Initialize SSE
+const evtSource = new EventSource(`/api/stream/${RUN_ID}`);
+
+evtSource.onmessage = (e) => {
+  try {
+    const event = JSON.parse(e.data);
+    handleEvent(event);
+  } catch (err) {
+    console.warn("Parse error:", err);
+  }
+};
+
+evtSource.onerror = () => {
+  console.warn("SSE connection lost, will retry...");
+};
+
+function handleEvent(event) {
+  const { event: type, data } = event;
+  console.log("[event]", type, data);
+  
+  // Add to events log
+  addEvent(type, data);
+  
+  // Track step states
+  if (data.step_id) {
+    if (type === "step_started") {
+      stepStates[data.step_id] = { status: "running", details: "جاري التحليل" };
+    } else if (type === "step_completed") {
+      stepStates[data.step_id] = {
+        status: "completed",
+        details: `اكتمل (${data.cost_usd ? "$" + data.cost_usd : ""})`,
+      };
+    } else if (type === "step_failed") {
+      stepStates[data.step_id] = { status: "failed", details: data.error || "فشل" };
+    }
+    renderStepProgress();
+  }
+  
+  // Pipeline-level events
+  if (type === "pipeline_started") {
+    document.getElementById("run-title").textContent = `تحليل ${data.client}`;
+    // Initialize step states
+    (data.selected_steps || []).forEach(s => {
+      stepStates[s] = { status: "pending", details: "في الانتظار" };
+    });
+    renderStepProgress();
+  }
+  
+  if (type === "done" || type === "pipeline_completed") {
+    finalizeUI(data);
+    evtSource.close();
+  }
+  
+  if (type === "error") {
+    showError(data.error || "حدث خطأ غير معروف");
+    evtSource.close();
+  }
+}
+
+function addEvent(type, data) {
+  const time = new Date().toLocaleTimeString("ar-SA");
+  const icon = getEventIcon(type);
+  const text = getEventText(type, data);
+  
+  const item = document.createElement("div");
+  item.className = "event-item";
+  item.innerHTML = `
+    <span class="event-time">${time}</span>
+    <span class="event-icon">${icon}</span>
+    <span class="event-text">${text}</span>
+  `;
+  eventsEl.insertBefore(item, eventsEl.firstChild);
+  
+  // Update header text
+  if (text) {
+    document.getElementById("progress-h-text").textContent = text;
+  }
+}
+
+function getEventIcon(type) {
+  if (type.includes("completed") || type === "done") return "✅";
+  if (type.includes("failed") || type === "error") return "❌";
+  if (type.includes("started")) return "▶";
+  if (type.includes("synthesis")) return "🎯";
+  if (type.includes("factor") || type.includes("force")) return "🔍";
+  if (type.includes("wave")) return "🌊";
+  return "📡";
+}
+
+function getEventText(type, data) {
+  const stepName = data.step_name_ar ? `[${data.step_name_ar}] ` : "";
+  
+  switch (type) {
+    case "pipeline_started":
+      return `بدء تحليل ${data.client} — ${data.total_steps} خطوة`;
+    case "wave_started":
+      return `🌊 بدء الموجة ${data.wave} — ${data.steps.length} خطوة بالتوازي`;
+    case "wave_completed":
+      return `🌊 اكتملت الموجة ${data.wave}`;
+    case "step_started":
+      return `${stepName}بدء التحليل`;
+    case "step_completed":
+      return `${stepName}اكتمل بنجاح${data.cost_usd ? " ($" + data.cost_usd + ")" : ""}`;
+    case "step_failed":
+      return `${stepName}فشل: ${data.error || "غير معروف"}`;
+    case "factor_completed":
+      return `${stepName}عامل ${data.factor_label} (${data.impact_level}) — ${data.opportunities_count} فرص، ${data.threats_count} تهديدات`;
+    case "force_completed":
+      return `${stepName}قوة ${data.force_label} — تهديد ${data.threat_level}`;
+    case "synthesis_complete":
+      return `${stepName}اكتمل التوليف`;
+    case "context_ready":
+      return `${stepName}جمع السياق — ${data.competitors_count} منافس، ${data.has_legal_factor ? "✓" : "✗"} عامل قانوني`;
+    case "candidate_complete":
+      return `${stepName}${data.name} — ${data.is_accepted ? "✓ مقبول" : "✗ مرفوض"}`;
+    case "discovery_complete":
+      return `${stepName}اكتشف ${data.local_count} محلية + ${data.international_count} دولية`;
+    case "done":
+    case "pipeline_completed":
+      return "🎉 اكتمل التحليل!";
+    case "error":
+      return `❌ ${data.error || "خطأ"}`;
+    default:
+      return `${stepName}${data.message || type}`;
+  }
+}
+
+function renderStepProgress() {
+  stepProgressEl.innerHTML = "";
+  Object.entries(stepStates).forEach(([stepId, state]) => {
+    const info = STEP_INFO[stepId] || { name: stepId, fw: "" };
+    const div = document.createElement("div");
+    div.className = `step-progress ${state.status}`;
+    div.innerHTML = `
+      <div class="step-progress-name">${info.name}</div>
+      <div class="step-progress-status">${state.details}</div>
+    `;
+    stepProgressEl.appendChild(div);
+  });
+}
+
+function finalizeUI(data) {
+  // Update header
+  const status = document.getElementById("run-status");
+  status.classList.remove("running");
+  status.classList.add("completed");
+  status.querySelector(".text").textContent = "اكتمل بنجاح";
+  
+  // Cost pill
+  if (data.total_cost_usd) {
+    const pill = document.getElementById("cost-pill");
+    pill.style.display = "inline-block";
+    pill.textContent = `التكلفة: $${data.total_cost_usd.toFixed(4)}`;
+  }
+  
+  // Hide spinner
+  document.getElementById("spinner").style.display = "none";
+  document.getElementById("progress-h-text").textContent = "✅ اكتمل التحليل";
+  
+  // Show results section
+  setTimeout(() => loadResults(), 300);
+}
+
+async function loadResults() {
+  try {
+    const res = await fetch(`/api/result/${RUN_ID}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    
+    const data = await res.json();
+    renderResults(data);
+  } catch (err) {
+    showError("فشل تحميل النتائج: " + err.message);
+  }
+}
+
+function renderResults(data) {
+  const grid = document.getElementById("results-grid");
+  grid.innerHTML = "";
+  
+  const outputs = data.outputs || {};
+  const files = data.files || {};
+  
+  // PESTLE
+  if (outputs.pestle) {
+    const o = outputs.pestle;
+    const synthesis = o.synthesis || {};
+    const opps = synthesis.top_opportunities || [];
+    const threats = synthesis.top_threats || [];
+    
+    grid.appendChild(createResultCard({
+      title: "PESTLE",
+      fw: "مسح البيئة الكلية",
+      summary: `
+        <strong>التموضع:</strong> ${synthesis.strategic_posture || "—"}<br>
+        <strong>أبرز فرصة:</strong> ${opps[0]?.title || "—"}<br>
+        <strong>أبرز تهديد:</strong> ${threats[0]?.title || "—"}<br>
+        <strong>العوامل المحلّلة:</strong> ${(o.factors_completed || []).length}/6
+      `,
+      files: { pestle_word: files.pestle_word },
+    }));
+  }
+  
+  // Porter
+  if (outputs.porter) {
+    const o = outputs.porter;
+    const cp = o.competitive_position || {};
+    
+    grid.appendChild(createResultCard({
+      title: "Porter's 5 Forces",
+      fw: "القوى التنافسية",
+      summary: `
+        <strong>التموضع التنافسي:</strong> ${cp.competitive_position || "—"}<br>
+        <strong>جاذبية القطاع:</strong> ${cp.overall_attractiveness || "—"}<br>
+        <strong>أقوى تهديد:</strong> ${cp.strongest_force?.force_label_ar || "—"}<br>
+        <strong>التوصيات:</strong> ${(cp.strategic_recommendations || []).length}
+      `,
+      files: { porter_word: files.porter_word },
+    }));
+  }
+  
+  // Benchmarking
+  if (outputs.benchmarking) {
+    const o = outputs.benchmarking;
+    const summary = o.summary || {};
+    
+    grid.appendChild(createResultCard({
+      title: "Benchmarking",
+      fw: "المقارنة المعيارية",
+      summary: `
+        <strong>محلية:</strong> ${summary.local_accepted || 0}/4<br>
+        <strong>دولية:</strong> ${summary.international_accepted || 0}/3<br>
+        <strong>المبادرات:</strong> ${summary.matched_initiatives || 0}<br>
+        <strong>المختارة للتقرير:</strong> ${summary.selected_initiatives || 0}
+      `,
+      files: {
+        benchmarking_word: files.benchmarking_word,
+        benchmarking_excel: files.benchmarking_excel,
+        benchmarking_output_1: files.benchmarking_output_1,
+        benchmarking_output_2: files.benchmarking_output_2,
+        benchmarking_output_3: files.benchmarking_output_3,
+      },
+    }));
+  }
+  
+  if (grid.children.length === 0) {
+    grid.innerHTML = '<div class="empty-state">لم يتم إنتاج أي نتائج</div>';
+  }
+  
+  document.getElementById("results-section").style.display = "block";
+  document.getElementById("results-section").scrollIntoView({ behavior: "smooth" });
+}
+
+function createResultCard({ title, fw, summary, files }) {
+  const card = document.createElement("div");
+  card.className = "result-card fade-in";
+  
+  let downloadsHtml = "";
+  Object.entries(files).forEach(([key, path]) => {
+    if (!path) return;
+    const label = FILE_LABELS[key] || key;
+    downloadsHtml += `
+      <a href="/api/download/${RUN_ID}/${key}" class="download-btn" download>
+        <span class="download-icon">⬇</span>
+        <span>${label}</span>
+      </a>
+    `;
+  });
+  
+  card.innerHTML = `
+    <h3>${title}</h3>
+    <div class="fw">${fw}</div>
+    <div class="result-summary">${summary}</div>
+    <div class="downloads">${downloadsHtml || '<div class="empty-state" style="padding: 10px;">لا توجد ملفات</div>'}</div>
+  `;
+  return card;
+}
+
+function showError(msg) {
+  const status = document.getElementById("run-status");
+  status.classList.remove("running");
+  status.classList.add("failed");
+  status.querySelector(".text").textContent = "فشل التحليل";
+  
+  document.getElementById("spinner").style.display = "none";
+  document.getElementById("progress-h-text").textContent = "❌ خطأ";
+  
+  const banner = document.createElement("div");
+  banner.className = "error-banner";
+  banner.textContent = msg;
+  document.querySelector("main").insertBefore(banner, document.getElementById("progress-panel"));
+}
+</script>
+
+</body>
+</html>
